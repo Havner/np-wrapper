@@ -13,6 +13,8 @@ This achieves a single purpose of changing the default angles when you recenter
 your TrackIR and is particularly useful for games that don't allow to set camera
 angles that are then honored with TrackIR turned on, namely Falcon 4 BMS.
 
+And this solution works properly with the TrackIR configured deadzone.
+
 # Installation
 
 Due to the fact that the client libraries reside in the TrackIR software
@@ -30,6 +32,9 @@ NPClient64.dll -> NPClient64-orig.dll (this is 64bit library)
 And then put the wrapper libraries inside that directory. Rename first so you
 won't overwrite! You can only use one library that is of interest to you.
 
+Reinstallation or update of the TrackIR software necessitates reinstall of the
+wrapper as the original libraries will be put in place.
+
 # Configuration
 
 Put the NPWrapper.ini inside that directory as well. This is a very simple file,
@@ -39,6 +44,8 @@ no comments, no sections, one line per game.
 
 The provided config has a line for BMS that shifts the pitch camera angle 5
 degrees down.
+
+Negative and float values are acceptable.
 
 # Further remarks
 
