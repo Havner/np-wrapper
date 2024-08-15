@@ -1,10 +1,15 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
+#include <cstdio>
+
 #include "pch.h"
 #include "log.h"
 
 // Don't use any allocators in this file, something conflicts with BMS
 
-#define FALCON4_ID 1901
+#define PI 3.14159265358979323846
+#define BUF_SIZE 512
+
+static char config_file[BUF_SIZE];
 
 // simple config in degrees
 typedef struct {
@@ -12,7 +17,43 @@ typedef struct {
     float roll, pitch, yaw;
 } config_t;
 
-static config_t config = { false, 0, 5, 0 };
+static config_t config;
+
+static void read_config(config_t* config, unsigned __int16 id)
+{
+    LOG_INIT("a");
+    LOG("Read config called with ID: %u\n", id);
+
+    if (config == NULL)
+        return;
+    config->use = false;
+
+    LOG("Opening config file\n");
+    FILE* cf = NULL;
+    fopen_s(&cf, config_file, "r");
+    if (cf == NULL) {
+        LOG("Error opening config file\n");
+        goto end;
+    }
+
+    char buf[BUF_SIZE];
+    while (fgets(buf, sizeof(buf), cf) != NULL) {
+        unsigned __int16 buf_id = 0;
+        int ret = sscanf_s(buf, "%hu %f %f %f", &buf_id, &config->roll, &config->pitch, &config->yaw);
+        if (ret != 4)
+            continue;
+        if (buf_id == id) {
+            LOG("Found an entry for requested ID\n");
+            config->use = true;
+            break;
+        }
+    }
+
+end:
+    if (cf != NULL)
+        fclose(cf);
+    LOG_CLOSE();
+}
 
 #pragma pack(push, 1)
 extern "C" typedef struct {
@@ -51,7 +92,7 @@ typedef struct {
     __int32(__stdcall* StopDataTransmission)(void);
 } np_state;
 
-static np_state state = { 0 };
+static np_state state;
 
 #define EXPORT(ret) extern "C" ret __declspec(dllexport)
 
@@ -70,11 +111,9 @@ EXPORT(__int32) NP_StopDataTransmission(void) { return state.StopDataTransmissio
 
 EXPORT(__int32) NP_RegisterProgramProfileID(unsigned __int16 id)
 {
-    config.use = id == FALCON4_ID;
+    read_config(&config, id);
     return state.RegisterProgramProfileID(id);
 }
-
-#define PI 3.14159265358979323846
 
 EXPORT(__int32) NP_GetData(tir_data_t* data)
 {
@@ -95,8 +134,6 @@ EXPORT(__int32) NP_GetData(tir_data_t* data)
     return ret;
 }
 
-#define BUF_SIZE 2048
-
 static bool initialize(void)
 {
     HKEY hkey = NULL;
@@ -104,7 +141,7 @@ static bool initialize(void)
     char buf[BUF_SIZE] = { 0 };
     const char* function = NULL;
 
-    LOG_INIT();
+    LOG_INIT("a");
 
     LOG("Opening registry\n");
     RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\NaturalPoint\\NATURALPOINT\\NPClient Location", 0, KEY_QUERY_VALUE, &hkey);
@@ -121,6 +158,10 @@ static bool initialize(void)
     LOG("Read file path: %s\n", buf);
     RegCloseKey(hkey);
     hkey = NULL;
+
+    strcpy_s(config_file, buf);
+    strcat_s(config_file, "NPWrapper.ini");
+    LOG("Config file path: %s\n", config_file);
 
     /* in the registry path there's normally a trailing slash already */
 #ifdef _WIN64

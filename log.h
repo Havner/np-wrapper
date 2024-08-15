@@ -3,14 +3,16 @@
 #ifdef _DEBUG
 
 #include <cstdio>
+#include <cstdlib>
 
-static FILE* logfile = NULL;
 #define LOG_FILE "C:/Users/Havner/np.txt"
-#define LOG_INIT()                                  \
+
+#define LOG_INIT(mode)                              \
+    FILE* logfile = NULL;                           \
     do {                                            \
-        fopen_s(&logfile, LOG_FILE, "w");           \
+        fopen_s(&logfile, LOG_FILE, mode);          \
         if (logfile == NULL)                        \
-            return false;                           \
+            exit(1);                                \
     } while(0)
 
 #define LOG(...)                                    \
