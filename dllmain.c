@@ -1,7 +1,5 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
-
-#include <stdio.h>
 #include "log.h"
 
 // Don't use any allocators in this file, something conflicts with BMS

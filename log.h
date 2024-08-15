@@ -2,9 +2,6 @@
 
 #ifdef _DEBUG
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #define LOG_FILE "C:/Users/Havner/np.txt"
 
 #define LOG_INIT(mode)                              \
