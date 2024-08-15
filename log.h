@@ -2,8 +2,8 @@
 
 #ifdef _DEBUG
 
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define LOG_FILE "C:/Users/Havner/np.txt"
 
@@ -30,7 +30,7 @@
 
 #else // _DEBUG
 
-#define LOG_INIT()
+#define LOG_INIT(mode)
 #define LOG(...)
 #define LOG_CLOSE()
 

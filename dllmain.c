@@ -1,7 +1,7 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
-#include <cstdio>
-
 #include "pch.h"
+
+#include <stdio.h>
 #include "log.h"
 
 // Don't use any allocators in this file, something conflicts with BMS
@@ -13,7 +13,7 @@ static char config_file[BUF_SIZE];
 
 // simple config in degrees
 typedef struct {
-    bool use;
+    BOOL use;
     float roll, pitch, yaw;
 } config_t;
 
@@ -26,7 +26,7 @@ static void read_config(config_t* config, unsigned __int16 id)
 
     if (config == NULL)
         return;
-    config->use = false;
+    config->use = FALSE;
 
     LOG("Opening config file\n");
     FILE* cf = NULL;
@@ -44,7 +44,7 @@ static void read_config(config_t* config, unsigned __int16 id)
             continue;
         if (buf_id == id) {
             LOG("Found an entry for requested ID\n");
-            config->use = true;
+            config->use = TRUE;
             break;
         }
     }
@@ -56,14 +56,14 @@ end:
 }
 
 #pragma pack(push, 1)
-extern "C" typedef struct {
+typedef struct {
     char DllSignature[200];
     char AppSignature[200];
 } tir_signature_t;
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-extern "C" typedef struct {
+typedef struct {
     __int16 status;
     __int16 frame;
     unsigned __int32 cksum;
@@ -94,7 +94,7 @@ typedef struct {
 
 static np_state state;
 
-#define EXPORT(ret) extern "C" ret __declspec(dllexport)
+#define EXPORT(ret) ret __declspec(dllexport)
 
 EXPORT(__int32) NP_RegisterWindowHandle(HWND hwnd) { return state.RegisterWindowHandle(hwnd); }
 EXPORT(__int32) NP_UnregisterWindowHandle(void) { return state.UnregisterWindowHandle(); }
@@ -134,7 +134,7 @@ EXPORT(__int32) NP_GetData(tir_data_t* data)
     return ret;
 }
 
-static bool initialize(void)
+static BOOL initialize(void)
 {
     HKEY hkey = NULL;
     DWORD size = BUF_SIZE - 1;
@@ -159,15 +159,15 @@ static bool initialize(void)
     RegCloseKey(hkey);
     hkey = NULL;
 
-    strcpy_s(config_file, buf);
-    strcat_s(config_file, "NPWrapper.ini");
+    strcpy_s(config_file, BUF_SIZE, buf);
+    strcat_s(config_file, BUF_SIZE, "NPWrapper.ini");
     LOG("Config file path: %s\n", config_file);
 
     /* in the registry path there's normally a trailing slash already */
 #ifdef _WIN64
-    strcat_s(buf, "NPClient64-orig.dll");
+    strcat_s(buf, BUF_SIZE, "NPClient64-orig.dll");
 #else
-    strcat_s(buf, "NPClient-orig.dll");
+    strcat_s(buf, BUF_SIZE, "NPClient-orig.dll");
 #endif
 
     memset(&state, 0, sizeof(np_state));
@@ -227,7 +227,7 @@ static bool initialize(void)
     LOG("Initialization complete\n");
     LOG_CLOSE();
 
-    return true;
+    return TRUE;
 
 error:
     if (function != NULL) {
@@ -238,7 +238,7 @@ error:
     }
     LOG_CLOSE();
 
-    return false;
+    return FALSE;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
