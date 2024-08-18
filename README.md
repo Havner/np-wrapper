@@ -1,7 +1,7 @@
 # What is this?
 
-This is a very simple DLL library that acts like a wrapper for NPClient.dll and
-NPClient64.dll, which are client libraries for TrackIR software.
+This is a very simple DLL library that acts like a wrapper for NPClient64.dll
+(64bit version), which is a client library for TrackIR software.
 
 # Purpose
 
@@ -17,20 +17,20 @@ And this solution works properly with the TrackIR configured deadzone.
 
 # Installation
 
-Due to the fact that the client libraries reside in the TrackIR software
+Due to the fact that the client library resides in the TrackIR software
 installation directory and most games load them from there by a full path the
 only method to install this wrapper is globally.
 
 Find a directory where TrackIR software is installed. This will most probably
 be: "C:\Program Files (x86)\NaturalPoint\TrackIR5" or something similar.
 
-Rename the client libraries that are there:
+Rename the client library that is there:
 
-NPClient.dll -> NPClient-orig.dll (this is 32 bit library)
-NPClient64.dll -> NPClient64-orig.dll (this is 64bit library)
+NPClient64.dll -> NPClient64-orig.dll
 
-And then put the wrapper libraries inside that directory. Rename first so you
-won't overwrite! You can only use one library that is of interest to you.
+And then put the wrapper library inside that directory. Rename first so you
+won't overwrite! Make use to rename exactly to the filename above. This is not
+just for backup. The original library is still required.
 
 Reinstallation or update of the TrackIR software necessitates reinstall of the
 wrapper as the original libraries will be put in place.
@@ -57,8 +57,7 @@ This has been ONLY tested with:
 - only the 64bit library
 
 If you want to add configuration for other games you need to know TrackIR game
-ID for them. An easy way is to build a debug version of this library and put
-some log file path accessible on your system in log.h and then read the value
-from the log, e.g.:
+ID for them. An easy way is to use a debug version of this library and check the
+log file (C:\Users\USERNAME\NPWrapper64.txt).
 
     Read config called with ID: 1901
