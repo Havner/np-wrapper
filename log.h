@@ -2,14 +2,12 @@
 
 #ifdef _DEBUG
 
-#define LOG_FILE "C:/Users/Havner/np.txt"
+void log_open(FILE** logfile, char* mode);
 
 #define LOG_INIT(mode)                              \
     FILE* logfile = NULL;                           \
     do {                                            \
-        fopen_s(&logfile, LOG_FILE, mode);          \
-        if (logfile == NULL)                        \
-            exit(1);                                \
+        log_open(&logfile, mode);                   \
     } while(0)
 
 #define LOG(...)                                    \

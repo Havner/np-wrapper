@@ -3,9 +3,8 @@
 #include "log.h"
 
 #define PI 3.14159265358979323846
-#define BUF_SIZE 512
 
-static char config_file[BUF_SIZE];
+static char config_file[MAX_PATH];
 
 // simple config in degrees
 typedef struct {
@@ -32,7 +31,7 @@ static void read_config(config_t* config, unsigned __int16 id)
         goto end;
     }
 
-    char buf[BUF_SIZE];
+    char buf[256] = { 0 };  // This is just 4 numbers, shouldn't be long
     while (fgets(buf, sizeof(buf), cf) != NULL) {
         unsigned __int16 buf_id = 0;
         int ret = sscanf_s(buf, "%hu %f %f %f", &buf_id, &config->roll, &config->pitch, &config->yaw);
@@ -101,8 +100,8 @@ static void initialize(void)
     initialized = TRUE;
 
     HKEY hkey = NULL;
-    DWORD size = BUF_SIZE - 1;
-    char buf[BUF_SIZE] = { 0 };
+    DWORD size = MAX_PATH - 1;
+    char buf[MAX_PATH] = { 0 };
     const char* function = NULL;
 
     LOG_INIT("w");
@@ -123,15 +122,15 @@ static void initialize(void)
     RegCloseKey(hkey);
     hkey = NULL;
 
-    strcpy_s(config_file, BUF_SIZE, buf);
-    strcat_s(config_file, BUF_SIZE, "NPWrapper.ini");
+    strcpy_s(config_file, MAX_PATH, buf);
+    strcat_s(config_file, MAX_PATH, "NPWrapper.ini");
     LOG("Config file path: %s\n", config_file);
 
     /* in the registry path there's normally a trailing slash already */
 #ifdef _WIN64
-    strcat_s(buf, BUF_SIZE, "NPClient64-orig.dll");
+    strcat_s(buf, MAX_PATH, "NPClient64-orig.dll");
 #else
-    strcat_s(buf, BUF_SIZE, "NPClient-orig.dll");
+    strcat_s(buf, MAX_PATH, "NPClient-orig.dll");
 #endif
 
     memset(&state, 0, sizeof(np_state_t));
