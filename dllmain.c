@@ -2,8 +2,6 @@
 #include "pch.h"
 #include "log.h"
 
-// Don't use any allocators in this file, something conflicts with BMS
-
 #define PI 3.14159265358979323846
 #define BUF_SIZE 512
 
@@ -88,58 +86,26 @@ typedef struct {
     __int32(__stdcall* ReCenter)(void);
     __int32(__stdcall* StartDataTransmission)(void);
     __int32(__stdcall* StopDataTransmission)(void);
-} np_state;
+} np_state_t;
 
-static np_state state;
+static np_state_t state;
 
-#define EXPORT(ret) ret __declspec(dllexport)
+static BOOL initialized = FALSE;
 
-EXPORT(__int32) NP_RegisterWindowHandle(HWND hwnd) { return state.RegisterWindowHandle(hwnd); }
-EXPORT(__int32) NP_UnregisterWindowHandle(void) { return state.UnregisterWindowHandle(); }
-EXPORT(__int32) NP_QueryVersion(unsigned __int16* version) { return state.QueryVersion(version); }
-EXPORT(__int32) NP_RequestData(unsigned __int16 req) { return state.RequestData(req); }
-EXPORT(__int32) NP_GetSignature(tir_signature_t* sig) { return state.GetSignature(sig); }
-EXPORT(__int32) NP_GetParameter(void) { return state.GetParameter(); }   // TODO: I don't trust this definition
-EXPORT(__int32) NP_SetParameter(void) { return state.SetParameter(); }   // TODO: I don't trust this definition
-EXPORT(__int32) NP_StartCursor(void) { return state.StartCursor(); }
-EXPORT(__int32) NP_StopCursor(void) { return state.StopCursor(); }
-EXPORT(__int32) NP_ReCenter(void) { return state.ReCenter(); }
-EXPORT(__int32) NP_StartDataTransmission(void) { return state.StartDataTransmission(); }
-EXPORT(__int32) NP_StopDataTransmission(void) { return state.StopDataTransmission(); }
-
-EXPORT(__int32) NP_RegisterProgramProfileID(unsigned __int16 id)
+static void initialize(void)
 {
-    read_config(&config, id);
-    return state.RegisterProgramProfileID(id);
-}
+    if (initialized)
+        return;
 
-EXPORT(__int32) NP_GetData(tir_data_t* data)
-{
-    __int32 ret = state.GetData(data);
+    // set this at the beginning, if this function fails there is no point in retrying all the time
+    initialized = TRUE;
 
-    if (config.use) {
-        if (config.roll != 0) {
-            data->roll += (float)(config.roll * 8191 * PI / 180);
-        }
-        if (config.pitch != 0) {
-            data->pitch += (float)(config.pitch * 8191 * PI / 180);
-        }
-        if (config.yaw != 0) {
-            data->yaw += (float)(config.yaw * 8191 * PI / 180);
-        }
-    }
-
-    return ret;
-}
-
-static BOOL initialize(void)
-{
     HKEY hkey = NULL;
     DWORD size = BUF_SIZE - 1;
     char buf[BUF_SIZE] = { 0 };
     const char* function = NULL;
 
-    LOG_INIT("a");
+    LOG_INIT("w");
 
     LOG("Opening registry\n");
     RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\NaturalPoint\\NATURALPOINT\\NPClient Location", 0, KEY_QUERY_VALUE, &hkey);
@@ -168,7 +134,7 @@ static BOOL initialize(void)
     strcat_s(buf, BUF_SIZE, "NPClient-orig.dll");
 #endif
 
-    memset(&state, 0, sizeof(np_state));
+    memset(&state, 0, sizeof(np_state_t));
 
     LOG("Opening library: %s\n", buf);
     state.hlibrary = LoadLibraryA(buf);
@@ -225,7 +191,7 @@ static BOOL initialize(void)
     LOG("Initialization complete\n");
     LOG_CLOSE();
 
-    return TRUE;
+    return;
 
 error:
     if (function != NULL) {
@@ -236,15 +202,70 @@ error:
     }
     LOG_CLOSE();
 
-    return FALSE;
+    return;
 }
 
+#define NPCALL(NAME, ...) do {              \
+    initialize();                           \
+    if (state.NAME == NULL)                 \
+        return -1;                          \
+    return state.NAME(__VA_ARGS__);         \
+} while(0)
+
+#define EXPORT(ret) ret __declspec(dllexport)
+
+EXPORT(__int32) NP_RegisterWindowHandle(HWND hwnd) { NPCALL(RegisterWindowHandle, hwnd); }
+EXPORT(__int32) NP_UnregisterWindowHandle(void) { NPCALL(UnregisterWindowHandle); }
+EXPORT(__int32) NP_QueryVersion(unsigned __int16* version) { NPCALL(QueryVersion, version); }
+EXPORT(__int32) NP_RequestData(unsigned __int16 req) { NPCALL(RequestData, req); }
+EXPORT(__int32) NP_GetSignature(tir_signature_t* sig) { NPCALL(GetSignature, sig); }
+EXPORT(__int32) NP_GetParameter(void) { NPCALL(GetParameter); }   // TODO: I don't trust this definition
+EXPORT(__int32) NP_SetParameter(void) { NPCALL(SetParameter); }   // TODO: I don't trust this definition
+EXPORT(__int32) NP_StartCursor(void) { NPCALL(StartCursor); }
+EXPORT(__int32) NP_StopCursor(void) { NPCALL(StopCursor); }
+EXPORT(__int32) NP_ReCenter(void) { NPCALL(ReCenter); }
+EXPORT(__int32) NP_StartDataTransmission(void) { NPCALL(StartDataTransmission); }
+EXPORT(__int32) NP_StopDataTransmission(void) { NPCALL(StopDataTransmission); }
+
+EXPORT(__int32) NP_RegisterProgramProfileID(unsigned __int16 id)
+{
+    initialize();
+    if (state.RegisterProgramProfileID == NULL)
+        return -1;
+
+    read_config(&config, id);
+    return state.RegisterProgramProfileID(id);
+}
+
+EXPORT(__int32) NP_GetData(tir_data_t* data)
+{
+    initialize();
+    if (state.GetData == NULL)
+        return -1;
+
+    __int32 ret = state.GetData(data);
+
+    if (config.use) {
+        if (config.roll != 0) {
+            data->roll += (float)(config.roll * 8191 * PI / 180);
+        }
+        if (config.pitch != 0) {
+            data->pitch += (float)(config.pitch * 8191 * PI / 180);
+        }
+        if (config.yaw != 0) {
+            data->yaw += (float)(config.yaw * 8191 * PI / 180);
+        }
+    }
+
+    return ret;
+}
+
+// https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-best-practices
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        return initialize();
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
