@@ -44,6 +44,10 @@ static void read_config(config_t* config, unsigned __int16 id)
         }
     }
 
+    config->roll = (float)(config->roll * 8191 * PI / 180);
+    config->pitch = (float)(config->pitch * 8191 * PI / 180);
+    config->yaw = (float)(config->yaw * 8191 * PI / 180);
+
 end:
     if (cf != NULL)
         fclose(cf);
@@ -246,13 +250,13 @@ EXPORT(__int32) NP_GetData(tir_data_t* data)
 
     if (config.use) {
         if (config.roll != 0) {
-            data->roll += (float)(config.roll * 8191 * PI / 180);
+            data->roll += config.roll;
         }
         if (config.pitch != 0) {
-            data->pitch += (float)(config.pitch * 8191 * PI / 180);
+            data->pitch += config.pitch;
         }
         if (config.yaw != 0) {
-            data->yaw += (float)(config.yaw * 8191 * PI / 180);
+            data->yaw += config.yaw;
         }
     }
 
