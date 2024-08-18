@@ -26,7 +26,7 @@ be: "C:\Program Files (x86)\NaturalPoint\TrackIR5" or something similar.
 
 Rename the client library that is there:
 
-NPClient64.dll -> NPClient64-orig.dll
+    NPClient64.dll -> NPClient64-orig.dll
 
 And then put the wrapper library inside that directory. Rename first so you
 won't overwrite! Make use to rename exactly to the filename above. This is not

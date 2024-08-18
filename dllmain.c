@@ -40,13 +40,12 @@ static void read_config(config_t* config, unsigned __int16 id)
         if (buf_id == id) {
             LOG("Found an entry for requested ID\n");
             config->use = TRUE;
+            config->roll = (float)(config->roll * 8191 * PI / 180);
+            config->pitch = (float)(config->pitch * 8191 * PI / 180);
+            config->yaw = (float)(config->yaw * 8191 * PI / 180);
             break;
         }
     }
-
-    config->roll = (float)(config->roll * 8191 * PI / 180);
-    config->pitch = (float)(config->pitch * 8191 * PI / 180);
-    config->yaw = (float)(config->yaw * 8191 * PI / 180);
 
 end:
     if (cf != NULL)
