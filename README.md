@@ -21,24 +21,25 @@ Due to the fact that the client library resides in the TrackIR software
 installation directory and most games load them from there by a full path the
 only method to install this wrapper is globally.
 
-Find a directory where TrackIR software is installed. This will most probably
-be: "C:\Program Files (x86)\NaturalPoint\TrackIR5" or something similar.
+1. Find a directory where TrackIR software is installed. This will most probably
+   be: "C:\Program Files (x86)\NaturalPoint\TrackIR5" or something similar.\
+2. Rename the client library that is there:
+```
+NPClient64.dll -> NPClient64-orig.dll
+```
+3. Put the wrapper library `NPClient64.dll` and the config file `NPWrapper.ini`
+   inside that directory. Ignore the `debug` directory.
 
-Rename the client library that is there:
-
-    NPClient64.dll -> NPClient64-orig.dll
-
-And then put the wrapper library inside that directory. Rename first so you
-won't overwrite! Make use to rename exactly to the filename above. This is not
-just for backup. The original library is still required.
-
-Reinstallation or update of the TrackIR software necessitates reinstall of the
-wrapper as the original libraries will be put in place.
+- Make sure you rename first so you won't overwrite!
+- Make sure to rename exactly to the filename above! This is not just for
+  backup. The original library is still required.
+- Reinstallation or update of the TrackIR software necessitates reinstall of the
+  wrapper as the original libraries will be put in place.
 
 # Configuration
 
-Put the NPWrapper.ini inside that directory as well. This is a very simple file,
-no comments, no sections, one line per game.
+The `NPWrapper.ini` is a config file. This is a very simple file, no comments,
+no sections, one line per game.
 
     TRACK_IR_GAME_ID ROLL_SHIFT PITCH_SHIFT YAW_SHIFT
 
