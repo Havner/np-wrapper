@@ -22,13 +22,14 @@ installation directory and most games load them from there by a full path the
 only method to install this wrapper is globally.
 
 1. Find a directory where TrackIR software is installed. This will most probably
-   be: "C:\Program Files (x86)\NaturalPoint\TrackIR5" or something similar.\
+   be: "C:\Program Files (x86)\NaturalPoint\TrackIR5" or something similar.
 2. Rename the client library that is there:
 ```
 NPClient64.dll -> NPClient64-orig.dll
 ```
-3. Put the wrapper library `NPClient64.dll` and the config file `NPWrapper.ini`
-   inside that directory. Ignore the `debug` directory.
+3. Extract the downloaded file (np-wrapper-VERSION.zip) and put the wrapper
+   library `NPClient64.dll` and the config file `NPWrapper.ini` inside the
+   TrackIR installation directory. Ignore the `debug` directory from the zip.
 
 - Make sure you rename first so you won't overwrite!
 - Make sure to rename exactly to the filename above! This is not just for
